@@ -1,0 +1,17 @@
+{
+	"servers": {
+		"my-mcp-weather-agent": {
+			"type": "http",
+			"url": "http://localhost:4111/api/mcp/weatherAgent/mcp"
+		},
+		"my-mcp-autonomous-network": {
+			"type": "http",
+			"url": "http://localhost:4111/api/mcp/autonomousNetwork/mcp",
+		},
+		"my-mcp-trip-motivation-workflow": {
+			"type": "http",
+			"url": "http://localhost:4111/api/mcp/tripMotivationWorkflow/mcp",
+		}
+	},
+	"inputs": []
+}
