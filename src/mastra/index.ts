@@ -6,8 +6,9 @@ import { tripMotivationWorkflow } from './workflows/weather-workflow';
 import { weatherAgent } from './agents/weather-agent';
 import { eightBallAgent } from './agents/eightball-agent';
 import { quotesAgent } from './agents/quotes-agent';
+import { researchCoordinatorAgent } from './agents/research-coordinator-agent';
 import { autonomousNetwork } from './networks/autonomous-network';
-import { createWeatherAgentServer, createAutonomousNetworkServer, createTripMotivationWorkflowServer } from './mcps';
+import { createWeatherAgentServer, createAutonomousNetworkServer, createTripMotivationWorkflowServer, createResearchCoordinatorServer } from './mcps';
 
 export const mastra = new Mastra({
   workflows: { tripMotivationWorkflow },
@@ -15,6 +16,7 @@ export const mastra = new Mastra({
     weatherAgent,
     eightBallAgent,
     quotesAgent,
+    researchCoordinatorAgent,
   },
   vnext_networks: {
     autonomousNetwork,
@@ -23,6 +25,7 @@ export const mastra = new Mastra({
     weatherAgent: createWeatherAgentServer(weatherAgent),
     autonomousNetwork: createAutonomousNetworkServer(autonomousNetwork),
     tripMotivationWorkflow: createTripMotivationWorkflowServer(tripMotivationWorkflow),
+    researchCoordinatorAgent: createResearchCoordinatorServer(researchCoordinatorAgent),
   },
   storage: new LibSQLStore({
     // stores telemetry, evals, and agent performance data with persistence

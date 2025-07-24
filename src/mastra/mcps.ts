@@ -4,6 +4,10 @@ import { z } from 'zod';
 import { weatherTool } from './tools/weather-tool';
 import { eightBallTool } from './tools/eightball-tool';
 import { quotesTool } from './tools/quotes-tool';
+import { taskPlannerTool } from './tools/orchestration/task-planner-tool';
+import { agentDelegatorTool } from './tools/orchestration/agent-delegator-tool';
+import { progressTrackerTool } from './tools/orchestration/progress-tracker-tool';
+import { qualityControlTool } from './tools/orchestration/quality-control-tool';
 
 /**
  * Creates MCP server that exposes the weather agent for external clients
@@ -70,6 +74,27 @@ export function createTripMotivationWorkflowServer(tripMotivationWorkflow: any) 
     tools: {}, // Empty tools object to prevent undefined error
     workflows: {
       tripMotivationWorkflow, // This will become tool "run_tripMotivationWorkflow"
+    },
+  });
+}
+
+/**
+ * Creates MCP server that exposes the Research Coordinator Agent for external clients
+ * This is the master orchestrator for complex multi-agent research and content generation workflows
+ */
+export function createResearchCoordinatorServer(researchCoordinatorAgent: any) {
+  return new MCPServer({
+    name: 'Research Coordinator MCP Server',
+    version: '1.0.0',
+    description: 'Exposes Research Coordinator Agent - the master orchestrator for complex multi-agent research and content generation workflows',
+    tools: {
+      taskPlannerTool,
+      agentDelegatorTool, 
+      progressTrackerTool,
+      qualityControlTool,
+    },
+    agents: {
+      researchCoordinatorAgent, // This will become tool "ask_researchCoordinatorAgent"
     },
   });
 }
