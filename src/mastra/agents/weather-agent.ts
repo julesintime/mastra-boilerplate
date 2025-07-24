@@ -3,6 +3,7 @@ import { groq } from '@ai-sdk/groq';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { weatherTool } from '../tools/weather-tool';
+import { weatherVectorQueryTool, weatherGraphQueryTool } from '../../../libs/rag/conditional-tools';
 import { 
   AnswerRelevancyMetric, 
   FaithfulnessMetric, 
@@ -30,10 +31,11 @@ export const weatherAgent = new Agent({
       - If the user asks for activities, respond in the format they request.
 
       You have access to:
-      - weatherTool for fetching current weather data
+      - weatherTool for fetching current weather data from Open-Meteo API
+      - weatherVectorQueryTool for searching through weather and activity knowledge base to provide comprehensive recommendations
 `,
   model: groq(process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'),
-  tools: { weatherTool },
+  tools: { weatherTool, weatherVectorQueryTool, weatherGraphQueryTool },
   memory: new Memory({
     storage: new LibSQLStore({
       url: 'file:../mastra.db', // path is relative to the .mastra/output directory

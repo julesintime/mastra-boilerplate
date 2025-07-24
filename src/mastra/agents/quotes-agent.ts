@@ -3,6 +3,7 @@ import { google } from '@ai-sdk/google';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { quotesTool } from '../tools/quotes-tool';
+import { quotesVectorQueryTool, quotesGraphQueryTool } from '../../../libs/rag/conditional-tools';
 import { 
   AnswerRelevancyMetric, 
   BiasMetric,
@@ -31,11 +32,12 @@ export const quotesAgent = new Agent({
 
       You have access to:
       - quotesTool for fetching inspirational quotes from famous authors
+      - quotesVectorQueryTool for searching through inspirational quotes and wisdom knowledge base
       
       Always aim to uplift, inspire, and provide meaningful wisdom that can positively impact the user's day or perspective.
 `,
   model: google(process.env.GEMINI_FAST_MODEL || 'gemini-2.5-flash'),
-  tools: { quotesTool },
+  tools: { quotesTool, quotesVectorQueryTool, quotesGraphQueryTool },
   memory: new Memory({
     storage: new LibSQLStore({
       url: 'file:../mastra.db', // path is relative to the .mastra/output directory

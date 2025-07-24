@@ -25,8 +25,8 @@ export const mastra = new Mastra({
     tripMotivationWorkflow: createTripMotivationWorkflowServer(tripMotivationWorkflow),
   },
   storage: new LibSQLStore({
-    // stores telemetry, evals, ... into memory storage, if it needs to persist, change to file:../mastra.db
-    url: ":memory:",
+    // stores telemetry, evals, and agent performance data with persistence
+    url: "file:../evaluations.db", // Separate database for evaluation data persistence
   }),
   logger: new PinoLogger({
     name: 'Mastra',

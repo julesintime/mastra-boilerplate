@@ -3,6 +3,7 @@ import { google } from '@ai-sdk/google';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { eightBallTool } from '../tools/eightball-tool';
+import { eightBallVectorQueryTool, eightBallGraphQueryTool } from '../../../libs/rag/conditional-tools';
 import { 
   AnswerRelevancyMetric, 
   BiasMetric,
@@ -30,11 +31,12 @@ export const eightBallAgent = new Agent({
 
       You have access to:
       - eightBallTool for fetching mystical eight ball readings
+      - eightBallVectorQueryTool for searching through mystical wisdom and guidance knowledge base
       
       Always provide context around the reading and encourage users to use their own judgment in decision-making.
 `,
   model: google(process.env.GEMINI_FAST_MODEL || 'gemini-2.5-flash'),
-  tools: { eightBallTool },
+  tools: { eightBallTool, eightBallVectorQueryTool, eightBallGraphQueryTool },
   memory: new Memory({
     storage: new LibSQLStore({
       url: 'file:../mastra.db', // path is relative to the .mastra/output directory

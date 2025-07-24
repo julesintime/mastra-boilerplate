@@ -1,0 +1,192 @@
+#!/usr/bin/env node
+
+/**
+ * Create Mastra Agent Framework
+ * 
+ * Bootstrap script for creating a new Mastra agent framework project
+ * with comprehensive features including agents, RAG, security, and workflows.
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+// ANSI color codes for terminal output
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+};
+
+function log(message, color = 'reset') {
+  console.log(`${colors[color]}${message}${colors.reset}`);
+}
+
+function copyRecursive(src, dest) {
+  const stats = fs.statSync(src);
+  
+  if (stats.isDirectory()) {
+    if (!fs.existsSync(dest)) {
+      fs.mkdirSync(dest, { recursive: true });
+    }
+    
+    const files = fs.readdirSync(src);
+    files.forEach(file => {
+      // Skip node_modules, .git, and build artifacts
+      if (['node_modules', '.git', '.mastra', 'dist', 'build'].includes(file)) {
+        return;
+      }
+      
+      copyRecursive(path.join(src, file), path.join(dest, file));
+    });
+  } else {
+    fs.copyFileSync(src, dest);
+  }
+}
+
+function updatePackageJson(projectPath, projectName) {
+  const packageJsonPath = path.join(projectPath, 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  
+  // Update package name and reset version
+  packageJson.name = projectName;
+  packageJson.version = '1.0.0';
+  packageJson.description = 'A comprehensive Mastra AI agent framework with RAG, security, and workflow capabilities';
+  
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+}
+
+function createEnvExample(projectPath) {
+  const envExampleContent = `# API Keys - Add your provider API keys
+GOOGLE_GENERATIVE_AI_API_KEY=your_google_api_key
+GROQ_API_KEY=your_groq_api_key
+OPENAI_API_KEY=your_openai_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+
+# Model Configuration
+GEMINI_MODEL=gemini-2.5-pro
+GROQ_MODEL=llama-3.3-70b-versatile
+OPENAI_MODEL=gpt-4o-mini
+ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
+
+# Fast Models for quick responses
+GEMINI_FAST_MODEL=gemini-2.5-flash
+GROQ_FAST_MODEL=llama-3.1-8b-instant
+
+# Tool-optimized models
+GROQ_TOOL_MODEL=llama-3.3-70b-versatile
+OPENAI_TOOL_MODEL=gpt-4o
+
+# RAG Configuration (optional)
+VECTOR_DB_PROVIDER=libsql
+RAG_DATABASE_URL=file:../rag-vectors.db
+EMBEDDING_PROVIDER=openai
+EMBEDDING_MODEL=text-embedding-3-small
+RAG_TOP_K=5
+RAG_MIN_SIMILARITY=0.7
+
+# Security Configuration
+JWT_SECRET=your_jwt_secret_key_here
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# MCP Server Configuration
+SITE_URL=http://localhost:4112
+WEATHER_MCP_SERVER_NAME=weatherAgent
+NETWORK_MCP_SERVER_NAME=autonomousNetwork
+
+# Observability
+OTEL_ENABLED=true
+LOG_LEVEL=debug
+OTEL_SERVICE_NAME=mastra-agent-framework
+OTEL_SAMPLING_RATE=1.0
+`;
+
+  fs.writeFileSync(path.join(projectPath, '.env.example'), envExampleContent);
+}
+
+function showSuccessMessage(projectName, projectPath) {
+  log('\n🎉 Success! Your Mastra Agent Framework has been created.\n', 'green');
+  log('📁 Project created at:', 'cyan');
+  log(`   ${projectPath}\n`, 'bright');
+  
+  log('🚀 Next steps:', 'yellow');
+  log(`   cd ${projectName}`, 'bright');
+  log('   cp .env.example .env', 'bright');
+  log('   # Edit .env with your API keys', 'bright');
+  log('   npm install', 'bright');
+  log('   npm run dev', 'bright');
+  
+  log('\n📚 Features included:', 'magenta');
+  log('   • Multi-agent system (Weather, Eight Ball, Quotes)', 'bright');
+  log('   • RAG system with vector database support', 'bright');
+  log('   • Security layer with auth & rate limiting', 'bright');
+  log('   • Advanced workflow architecture', 'bright');
+  log('   • MCP server integration', 'bright');
+  log('   • Comprehensive testing & evaluation', 'bright');
+  
+  log('\n📖 Documentation:', 'blue');
+  log('   • DEVELOPMENT_GUIDE.md - Comprehensive development guide', 'bright');
+  log('   • README.md - Quick start guide', 'bright');
+  
+  log('\n🎯 Ready to build amazing AI agent systems!', 'green');
+}
+
+function main() {
+  const args = process.argv.slice(2);
+  
+  if (args.length === 0) {
+    log('❌ Error: Please provide a project name', 'red');
+    log('Usage: npx create-mastra-agent-framework <project-name>', 'yellow');
+    process.exit(1);
+  }
+  
+  const projectName = args[0];
+  const currentDir = process.cwd();
+  const projectPath = path.join(currentDir, projectName);
+  
+  log('🚀 Creating Mastra Agent Framework...', 'cyan');
+  log(`📦 Project name: ${projectName}`, 'bright');
+  
+  // Check if directory already exists
+  if (fs.existsSync(projectPath)) {
+    log(`❌ Error: Directory "${projectName}" already exists`, 'red');
+    process.exit(1);
+  }
+  
+  try {
+    // Copy template files
+    log('📂 Copying template files...', 'yellow');
+    const templatePath = __dirname;
+    copyRecursive(templatePath, projectPath);
+    
+    // Update package.json
+    log('📝 Updating package.json...', 'yellow');
+    updatePackageJson(projectPath, projectName);
+    
+    // Create .env.example
+    log('⚙️  Creating environment configuration...', 'yellow');
+    createEnvExample(projectPath);
+    
+    // Remove the bootstrap script from the new project
+    const bootstrapScript = path.join(projectPath, 'create-mastra-agent-framework');
+    if (fs.existsSync(bootstrapScript)) {
+      fs.unlinkSync(bootstrapScript);
+    }
+    
+    showSuccessMessage(projectName, projectPath);
+    
+  } catch (error) {
+    log(`❌ Error creating project: ${error.message}`, 'red');
+    process.exit(1);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
