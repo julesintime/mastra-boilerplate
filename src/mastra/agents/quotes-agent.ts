@@ -3,6 +3,16 @@ import { google } from '@ai-sdk/google';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { quotesTool } from '../tools/quotes-tool';
+import { 
+  AnswerRelevancyMetric, 
+  BiasMetric,
+  ToxicityMetric,
+  SummarizationMetric 
+} from '@mastra/evals/llm';
+import { 
+  CompletenessMetric, 
+  ToneConsistencyMetric 
+} from '@mastra/evals/nlp';
 
 export const quotesAgent = new Agent({
   name: 'Inspirational Quotes Agent',
@@ -31,4 +41,21 @@ export const quotesAgent = new Agent({
       url: 'file:../mastra.db', // path is relative to the .mastra/output directory
     }),
   }),
+  evals: {
+    answerRelevancy: new AnswerRelevancyMetric(google('gemini-2.5-flash'), {
+      uncertaintyWeight: 0.3,
+      scale: 1,
+    }),
+    toneConsistency: new ToneConsistencyMetric(),
+    bias: new BiasMetric(google('gemini-2.5-flash'), {
+      scale: 1,
+    }),
+    toxicity: new ToxicityMetric(google('gemini-2.5-flash'), {
+      scale: 1,
+    }),
+    summarization: new SummarizationMetric(google('gemini-2.5-flash'), {
+      scale: 1,
+    }),
+    completeness: new CompletenessMetric(),
+  },
 });

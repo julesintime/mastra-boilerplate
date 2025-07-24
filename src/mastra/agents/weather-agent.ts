@@ -3,6 +3,16 @@ import { groq } from '@ai-sdk/groq';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { weatherTool } from '../tools/weather-tool';
+import { 
+  AnswerRelevancyMetric, 
+  FaithfulnessMetric, 
+  HallucinationMetric 
+} from '@mastra/evals/llm';
+import { 
+  CompletenessMetric, 
+  ContentSimilarityMetric,
+  ToneConsistencyMetric 
+} from '@mastra/evals/nlp';
 
 export const weatherAgent = new Agent({
   name: 'Weather Agent',
@@ -29,4 +39,24 @@ export const weatherAgent = new Agent({
       url: 'file:../mastra.db', // path is relative to the .mastra/output directory
     }),
   }),
+  evals: {
+    answerRelevancy: new AnswerRelevancyMetric(groq('llama-3.3-70b-versatile'), {
+      uncertaintyWeight: 0.3,
+      scale: 1,
+    }),
+    faithfulness: new FaithfulnessMetric(groq('llama-3.3-70b-versatile'), {
+      scale: 1,
+      context: [], // Will be populated dynamically during evaluation
+    }),
+    toneConsistency: new ToneConsistencyMetric(),
+    hallucination: new HallucinationMetric(groq('llama-3.3-70b-versatile'), {
+      scale: 1,
+      context: [], // Will be populated dynamically during evaluation
+    }),
+    contentSimilarity: new ContentSimilarityMetric({
+      ignoreCase: true,
+      ignoreWhitespace: true,
+    }),
+    completeness: new CompletenessMetric(),
+  },
 });

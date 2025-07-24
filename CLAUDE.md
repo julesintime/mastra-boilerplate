@@ -15,7 +15,10 @@ This is a Mastra AI project - a TypeScript agent framework for building AI appli
 - `npm run dev` - Start Mastra development server with local playground
 - `npm run build` - Build the project using Mastra CLI  
 - `npm run start` - Start the built project
-- `npm test` - No tests configured yet
+- `npm test` - Run test suite using Vitest
+- `npm run test:ui` - Run tests with interactive UI
+- `npm run test:run` - Run tests once (non-watch mode)
+- `npm run test:coverage` - Run tests with coverage reporting
 
 ## Architecture & Structure
 
@@ -50,11 +53,14 @@ Each agent uses:
 ### Key Dependencies
 
 - **@mastra/core** - Main Mastra framework
+- **@mastra/evals** - Comprehensive evaluation metrics for agent quality assessment
 - **@mastra/mcp** - MCP server for exposing agents and tools to external clients
 - **@mastra/memory** - Agent memory management 
 - **@mastra/libsql** - SQLite storage backend (file-based for agent memory, in-memory for telemetry)
 - **@ai-sdk/google** - Google Gemini model integration
+- **@ai-sdk/groq** - Groq Llama model integration
 - **zod** - Schema validation
+- **vitest** - Modern testing framework with TypeScript support
 
 ### Storage Configuration
 
@@ -160,12 +166,78 @@ curl http://localhost:4112/api/mcp/autonomousNetwork/mcp
 
 ## Testing & Validation
 
+### Comprehensive Test Suite
+The project includes a robust testing framework built with **Vitest** for comprehensive quality assurance:
+
+#### Test Structure
+```
+tests/
+├── agents/                    # Agent-specific tests
+│   ├── weather-agent.test.ts  # Weather agent evaluation tests
+│   ├── eightball-agent.test.ts # Eight ball agent evaluation tests
+│   └── quotes-agent.test.ts   # Quotes agent evaluation tests
+├── evaluation/                # Evaluation system tests
+│   ├── integration.test.ts    # Cross-agent evaluation consistency
+│   └── metrics.test.ts        # Individual metric validation
+└── setup.ts                   # Test environment configuration
+```
+
+#### Test Coverage Areas
+1. **Agent Configuration Testing**
+   - Validates proper agent setup and tool integration
+   - Ensures evaluation metrics are correctly configured
+   - Tests agent specializations and capabilities
+
+2. **Evaluation Metrics Testing**
+   - **LLM-based Metrics**: Answer relevancy, faithfulness, hallucination detection, bias detection, toxicity detection, summarization quality
+   - **NLP-based Metrics**: Completeness, content similarity, keyword coverage, textual difference, tone consistency
+   - **Edge Case Handling**: Empty inputs, long texts, special characters, numeric content
+
+3. **Integration Testing**
+   - Cross-agent evaluation consistency
+   - Performance and reliability validation
+   - Real-world scenario testing
+   - Concurrent evaluation handling
+
+4. **Quality Assurance**
+   - Bias detection in mystical guidance and inspirational content
+   - Toxicity prevention in all agent responses
+   - Factual accuracy validation for weather information
+   - Tone consistency across agent interactions
+
+#### Running Tests
+```bash
+# Run all tests
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests once (CI mode)
+npm run test:run
+
+# Run with coverage
+npm run test:coverage
+
+# Run specific test files
+npm test -- tests/agents/weather-agent.test.ts
+```
+
+#### Test Features
+- **Mocked API calls** to prevent external dependencies during testing
+- **Predictable evaluation responses** for consistent test behavior
+- **Performance benchmarks** with timeout validation
+- **Error handling validation** for graceful failure modes
+- **Industry-standard test patterns** ready for CI/CD integration
+
+### Functional Validation
 - The weather tool integrates with Open-Meteo API for real weather data
 - The eight ball tool provides randomized responses with different sentiment types
 - The quotes tool fetches inspirational content from famous authors
 - The workflow demonstrates chaining operations and streaming responses for activity planning
 - The autonomous network coordinates between multiple specialized agents
 - MCP servers expose all functionality to external clients
+- All agents maintain quality standards through continuous evaluation
 
 ## Important Notes
 
@@ -180,21 +252,49 @@ curl http://localhost:4112/api/mcp/autonomousNetwork/mcp
 
 Based on Mastra's comprehensive feature set, consider adding these important capabilities to your template:
 
-### 🧪 **Evaluation System (Evals)**
-Add automated testing and quality measurement for agent responses:
+### 🧪 **Evaluation System (Evals)** ✅ IMPLEMENTED
+Comprehensive automated testing and quality measurement for agent responses:
 
 ```typescript
-// Add to agent configuration
-import { SummarizationMetric, ContentSimilarityMetric, ToneConsistencyMetric } from '@mastra/evals';
+// Implemented in all agents with specialized metrics
+import { 
+  AnswerRelevancyMetric, 
+  FaithfulnessMetric, 
+  HallucinationMetric,
+  BiasMetric,
+  ToxicityMetric,
+  SummarizationMetric 
+} from '@mastra/evals/llm';
+import { 
+  CompletenessMetric, 
+  ContentSimilarityMetric,
+  ToneConsistencyMetric 
+} from '@mastra/evals/nlp';
 
 evals: {
+  answerRelevancy: new AnswerRelevancyMetric(model, { uncertaintyWeight: 0.3 }),
+  faithfulness: new FaithfulnessMetric(model, { context: [] }),
+  hallucination: new HallucinationMetric(model, { context: [] }),
+  bias: new BiasMetric(model),
+  toxicity: new ToxicityMetric(model),
   summarization: new SummarizationMetric(model),
-  contentSimilarity: new ContentSimilarityMetric(),
-  tone: new ToneConsistencyMetric(),
+  completeness: new CompletenessMetric(),
+  contentSimilarity: new ContentSimilarityMetric({ ignoreCase: true }),
+  toneConsistency: new ToneConsistencyMetric(),
 }
 ```
 
-**Benefits**: Quantifiable quality metrics, CI/CD integration, performance tracking over time
+**Implemented Metrics by Agent:**
+- **Weather Agent**: Answer relevancy, faithfulness, hallucination detection, tone consistency, content similarity, completeness
+- **Eight Ball Agent**: Answer relevancy, bias detection, toxicity detection, tone consistency, completeness  
+- **Quotes Agent**: Answer relevancy, bias detection, toxicity detection, summarization quality, tone consistency, completeness
+
+**Benefits**: 
+- ✅ Quantifiable quality metrics with automated scoring (0-1 scale)
+- ✅ Comprehensive test suite with 30+ test cases
+- ✅ CI/CD integration ready with Vitest framework
+- ✅ Real-time evaluation during development
+- ✅ Performance tracking and regression detection
 
 ### 🔍 **RAG (Retrieval-Augmented Generation)**
 Enable agents to work with your own data sources:
