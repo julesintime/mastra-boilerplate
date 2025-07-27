@@ -4,10 +4,9 @@ import { z } from 'zod';
 import { weatherTool } from './tools/weather-tool';
 import { eightBallTool } from './tools/eightball-tool';
 import { quotesTool } from './tools/quotes-tool';
-import { taskPlannerTool } from './tools/orchestration/task-planner-tool';
-import { agentDelegatorTool } from './tools/orchestration/agent-delegator-tool';
-import { progressTrackerTool } from './tools/orchestration/progress-tracker-tool';
-import { qualityControlTool } from './tools/orchestration/quality-control-tool';
+import { researchTool, webResearchTool } from './tools/research-tool';
+import { dataAnalysisTool, trendAnalysisTool } from './tools/data-analysis-tool';
+import { contentWritingTool, contentReviewTool } from './tools/content-writing-tool';
 
 /**
  * Creates MCP server that exposes the weather agent for external clients
@@ -79,22 +78,94 @@ export function createTripMotivationWorkflowServer(tripMotivationWorkflow: any) 
 }
 
 /**
- * Creates MCP server that exposes the Research Coordinator Agent for external clients
- * This is the master orchestrator for complex multi-agent research and content generation workflows
+ * Creates MCP server that exposes content generation agents and tools for external clients
+ * Provides research, analysis, and content writing capabilities
  */
-export function createResearchCoordinatorServer(researchCoordinatorAgent: any) {
+export function createContentGenerationServer(
+  researchCoordinatorAgent: any,
+  webResearchAgent: any,
+  dataAnalysisAgent: any,
+  contentWriterAgent: any
+) {
   return new MCPServer({
-    name: 'Research Coordinator MCP Server',
+    name: 'Content Generation MCP Server',
     version: '1.0.0',
-    description: 'Exposes Research Coordinator Agent - the master orchestrator for complex multi-agent research and content generation workflows',
+    description: 'Exposes content generation agents and tools for research coordination, web research, data analysis, and content writing',
     tools: {
-      taskPlannerTool,
-      agentDelegatorTool, 
-      progressTrackerTool,
-      qualityControlTool,
+      researchTool,
+      webResearchTool,
+      dataAnalysisTool,
+      trendAnalysisTool,
+      contentWritingTool,
+      contentReviewTool,
     },
     agents: {
       researchCoordinatorAgent, // This will become tool "ask_researchCoordinatorAgent"
+      webResearchAgent, // This will become tool "ask_webResearchAgent"
+      dataAnalysisAgent, // This will become tool "ask_dataAnalysisAgent"
+      contentWriterAgent, // This will become tool "ask_contentWriterAgent"
+    },
+  });
+}
+
+/**
+ * Creates MCP server that exposes the content production workflow for external clients
+ */
+export function createContentProductionWorkflowServer(contentProductionWorkflowShort: any) {
+  return new MCPServer({
+    name: 'Content Production Workflow MCP Server',
+    version: '1.0.0',
+    description: 'Exposes content production workflow that orchestrates research, analysis, and writing phases',
+    tools: {}, // Empty tools object to prevent undefined error
+    workflows: {
+      contentProductionWorkflowShort, // This will become tool "run_contentProductionWorkflowShort"
+    },
+  });
+}
+
+/**
+ * Creates MCP server that exposes the content production network for external clients
+ */
+export function createContentProductionNetworkServer(contentProductionNetwork: any) {
+  // Create a custom tool that wraps the network
+  const contentProductionNetworkTool = createTool({
+    id: 'ask_contentProductionNetwork',
+    description: 'Ask the Content Production Network to create comprehensive content. This network coordinates research, analysis, and writing agents for high-quality content generation.',
+    inputSchema: z.object({
+      topic: z.string().describe('The main topic for content generation'),
+      content_type: z.string().optional().describe('Type of content (article, report, blog_post, etc.)'),
+      target_audience: z.string().optional().describe('Target audience for the content'),
+      research_depth: z.string().optional().describe('Depth of research (surface, moderate, deep)'),
+      quality_level: z.string().optional().describe('Quality level (standard, premium, executive)'),
+    }),
+    execute: async ({ context }) => {
+      try {
+        const result = await contentProductionNetwork.execute({
+          topic: context.topic,
+          content_type: context.content_type || 'article',
+          target_audience: context.target_audience || 'business professionals',
+          research_depth: context.research_depth || 'moderate',
+          quality_level: context.quality_level || 'standard',
+        });
+        return result.success ? result.network_result : `Error: ${result.error}`;
+      } catch (error) {
+        return `Error processing request: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      }
+    },
+  });
+
+  return new MCPServer({
+    name: 'Content Production Network MCP Server',
+    version: '1.0.0',
+    description: 'Exposes content production network with coordinated research, analysis, and writing agents',
+    tools: {
+      researchTool,
+      webResearchTool,
+      dataAnalysisTool,
+      trendAnalysisTool,
+      contentWritingTool,
+      contentReviewTool,
+      contentProductionNetworkTool, // Network wrapped as a tool
     },
   });
 }

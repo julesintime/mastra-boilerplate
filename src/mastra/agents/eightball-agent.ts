@@ -1,9 +1,8 @@
 import { Agent } from '@mastra/core/agent';
-import { google } from '@ai-sdk/google';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { eightBallTool } from '../tools/eightball-tool';
-import { eightBallVectorQueryTool, eightBallGraphQueryTool } from '../../../libs/rag/conditional-tools';
+import { google } from '@ai-sdk/google';
 import { 
   AnswerRelevancyMetric, 
   BiasMetric,
@@ -31,27 +30,26 @@ export const eightBallAgent = new Agent({
 
       You have access to:
       - eightBallTool for fetching mystical eight ball readings
-      - eightBallVectorQueryTool for searching through mystical wisdom and guidance knowledge base
       
       Always provide context around the reading and encourage users to use their own judgment in decision-making.
 `,
-  model: google(process.env.GEMINI_FAST_MODEL || 'gemini-2.5-flash'),
-  tools: { eightBallTool, eightBallVectorQueryTool, eightBallGraphQueryTool },
+  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'),
+  tools: { eightBallTool },
   memory: new Memory({
     storage: new LibSQLStore({
       url: 'file:../mastra.db', // path is relative to the .mastra/output directory
     }),
   }),
   evals: {
-    answerRelevancy: new AnswerRelevancyMetric(google('gemini-2.5-flash'), {
+    answerRelevancy: new AnswerRelevancyMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
       uncertaintyWeight: 0.3,
       scale: 1,
     }),
     toneConsistency: new ToneConsistencyMetric(),
-    bias: new BiasMetric(google('gemini-2.5-flash'), {
+    bias: new BiasMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
       scale: 1,
     }),
-    toxicity: new ToxicityMetric(google('gemini-2.5-flash'), {
+    toxicity: new ToxicityMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
       scale: 1,
     }),
     completeness: new CompletenessMetric(),

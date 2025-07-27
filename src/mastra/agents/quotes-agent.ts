@@ -1,9 +1,8 @@
 import { Agent } from '@mastra/core/agent';
-import { google } from '@ai-sdk/google';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { quotesTool } from '../tools/quotes-tool';
-import { quotesVectorQueryTool, quotesGraphQueryTool } from '../../../libs/rag/conditional-tools';
+import { google } from '@ai-sdk/google';
 import { 
   AnswerRelevancyMetric, 
   BiasMetric,
@@ -32,30 +31,29 @@ export const quotesAgent = new Agent({
 
       You have access to:
       - quotesTool for fetching inspirational quotes from famous authors
-      - quotesVectorQueryTool for searching through inspirational quotes and wisdom knowledge base
       
       Always aim to uplift, inspire, and provide meaningful wisdom that can positively impact the user's day or perspective.
 `,
-  model: google(process.env.GEMINI_FAST_MODEL || 'gemini-2.5-flash'),
-  tools: { quotesTool, quotesVectorQueryTool, quotesGraphQueryTool },
+  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'),
+  tools: { quotesTool },
   memory: new Memory({
     storage: new LibSQLStore({
       url: 'file:../mastra.db', // path is relative to the .mastra/output directory
     }),
   }),
   evals: {
-    answerRelevancy: new AnswerRelevancyMetric(google('gemini-2.5-flash'), {
+    answerRelevancy: new AnswerRelevancyMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
       uncertaintyWeight: 0.3,
       scale: 1,
     }),
     toneConsistency: new ToneConsistencyMetric(),
-    bias: new BiasMetric(google('gemini-2.5-flash'), {
+    bias: new BiasMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
       scale: 1,
     }),
-    toxicity: new ToxicityMetric(google('gemini-2.5-flash'), {
+    toxicity: new ToxicityMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
       scale: 1,
     }),
-    summarization: new SummarizationMetric(google('gemini-2.5-flash'), {
+    summarization: new SummarizationMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
       scale: 1,
     }),
     completeness: new CompletenessMetric(),

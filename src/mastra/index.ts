@@ -3,29 +3,54 @@ import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
 import { tripMotivationWorkflow } from './workflows/weather-workflow';
+import { contentProductionWorkflowShort } from './workflows/content-production-workflow';
 import { weatherAgent } from './agents/weather-agent';
 import { eightBallAgent } from './agents/eightball-agent';
 import { quotesAgent } from './agents/quotes-agent';
-import { researchCoordinatorAgent } from './agents/research-coordinator-agent';
+import { researchCoordinatorAgent, webResearchAgent } from './agents/research-coordinator-agent';
+import { dataAnalysisAgent } from './agents/data-analysis-agent';
+import { contentWriterAgent } from './agents/content-writer-agent';
 import { autonomousNetwork } from './networks/autonomous-network';
-import { createWeatherAgentServer, createAutonomousNetworkServer, createTripMotivationWorkflowServer, createResearchCoordinatorServer } from './mcps';
+import { contentProductionNetwork } from './networks/content-production-network';
+import { 
+  createWeatherAgentServer, 
+  createAutonomousNetworkServer, 
+  createTripMotivationWorkflowServer,
+  createContentGenerationServer,
+  createContentProductionWorkflowServer,
+  createContentProductionNetworkServer
+} from './mcps';
 
 export const mastra = new Mastra({
-  workflows: { tripMotivationWorkflow },
+  workflows: { 
+    tripMotivationWorkflow,
+    contentProductionWorkflowShort,
+  },
   agents: { 
     weatherAgent,
     eightBallAgent,
     quotesAgent,
     researchCoordinatorAgent,
+    webResearchAgent,
+    dataAnalysisAgent,
+    contentWriterAgent,
   },
   vnext_networks: {
     autonomousNetwork,
+    contentProductionNetwork,
   },
   mcpServers: {
     weatherAgent: createWeatherAgentServer(weatherAgent),
     autonomousNetwork: createAutonomousNetworkServer(autonomousNetwork),
     tripMotivationWorkflow: createTripMotivationWorkflowServer(tripMotivationWorkflow),
-    researchCoordinatorAgent: createResearchCoordinatorServer(researchCoordinatorAgent),
+    contentGeneration: createContentGenerationServer(
+      researchCoordinatorAgent,
+      webResearchAgent,
+      dataAnalysisAgent,
+      contentWriterAgent
+    ),
+    contentProductionWorkflow: createContentProductionWorkflowServer(contentProductionWorkflowShort),
+    contentProductionNetwork: createContentProductionNetworkServer(contentProductionNetwork),
   },
   storage: new LibSQLStore({
     // stores telemetry, evals, and agent performance data with persistence

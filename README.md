@@ -1,26 +1,26 @@
-# Mastra Agent Framework
+# Mastra Agent Framework Boilerplate
 
-> Production-ready TypeScript template for building AI agent systems with MCP server integration
+> Clean, production-ready TypeScript boilerplate for building AI agent systems with the Mastra framework
 
 ## Overview
 
-A comprehensive boilerplate for creating intelligent AI agent systems using the [Mastra framework](https://mastra.ai). This template demonstrates best practices for agent orchestration, tool integration, and external API exposure through Model Context Protocol (MCP) servers.
+A streamlined boilerplate for creating intelligent AI agent systems using the [Mastra framework](https://mastra.ai). This template provides best practices for agent orchestration, tool integration, and MCP server exposure.
 
 ## Features
 
-- **🤖 Multi-Agent System**: Weather, Eight Ball, and Quotes agents with autonomous coordination
-- **🔍 RAG Integration**: Retrieval-Augmented Generation with multiple vector database support  
-- **🔒 Security Layer**: Authentication, authorization, and rate limiting
-- **🔄 Advanced Workflows**: Complex business processes with monitoring and templates
-- **🔌 MCP Server**: Expose agents to external tools like Claude Code and IDEs
-- **📊 Comprehensive Testing**: Evaluation metrics and automated quality assurance
-- **⚡ Multi-Model Support**: Google Gemini, Groq Llama, OpenAI GPT, Anthropic Claude
+- **🤖 Multi-Agent System**: Pre-configured Weather, Eight Ball, and Quotes agents
+- **🔌 AI SDK Integration**: Direct integration with Vercel AI SDK for all major providers
+- **🔄 Workflow Support**: Built-in workflow orchestration capabilities  
+- **🔌 MCP Server**: Ready-to-use MCP server for external tool integration
+- **📊 Evaluation Framework**: Comprehensive testing and quality assurance
+- **⚡ Multi-Provider Support**: Google Gemini, Groq, OpenAI, Anthropic
 
 ## Quick Start
 
 ### Prerequisites
 
 - Node.js v20.0+
+- pnpm (recommended)
 - API keys for your chosen model providers
 
 ### Installation
@@ -29,195 +29,91 @@ A comprehensive boilerplate for creating intelligent AI agent systems using the 
 # Clone and install
 git clone <repository-url>
 cd mastra-agent-framework
-npm install
+pnpm install
 
 # Configure environment
-cp .env.example .env
-# Edit .env with your API keys
+cp .env.local .env.local
+# Edit .env.local with your API keys
 
 # Start development server
-npm run dev
+pnpm dev
 ```
 
-### Basic Usage
-
-```bash
-# Development with hot-reload
-npm run dev
-
-# Build for production  
-npm run build
-
-# Run tests
-npm test
-
-# Initialize RAG system (optional)
-npm run rag:init
-```
-
-## Architecture
+## Project Structure
 
 ```
-├── src/mastra/           # Core business logic
-│   ├── agents/           # Specialized AI agents
-│   ├── tools/            # Business-specific tools
-│   ├── workflows/        # Business processes
-│   ├── networks/         # Agent coordination
-│   └── index.ts          # Main configuration
-├── libs/                 # Extensible plugins
-│   ├── rag/             # RAG system
-│   ├── security/        # Security components
-│   └── workflows/       # Advanced workflow architecture
-└── tests/               # Comprehensive test suite
+src/mastra/
+├── agents/           # AI agents (weather, eightball, quotes, etc.)
+├── tools/            # Custom tools for agents
+├── workflows/        # Business process workflows
+├── networks/         # Agent coordination networks
+└── index.ts          # Main Mastra configuration
 ```
-
-## Key Components
-
-### Agents
-- **Weather Agent**: Real-time weather data and activity planning
-- **Eight Ball Agent**: Mystical guidance with multi-language support
-- **Quotes Agent**: Inspirational wisdom from famous authors
-- **Autonomous Network**: Intelligent coordination between agents
-
-### MCP Server Integration
-Access agents externally via HTTP endpoints:
-
-```bash
-# Weather Agent
-http://localhost:4112/api/mcp/weatherAgent/mcp
-
-# Autonomous Network  
-http://localhost:4112/api/mcp/autonomousNetwork/mcp
-
-# Available tools: ask_weatherAgent, weatherTool, eightBallTool, quotesTool
-```
-
-### RAG System
-Enhance agents with retrieval-augmented generation:
-
-- **Vector Databases**: LibSQL, Chroma, PostgreSQL+pgvector, Pinecone
-- **Document Processing**: Multiple chunking strategies
-- **Advanced Search**: Semantic search, reranking, hybrid search
 
 ## Configuration
 
-Key environment variables:
+Edit `.env.local` with your settings:
 
 ```env
-# Model Providers
-GOOGLE_GENERATIVE_AI_API_KEY=your_key
-GROQ_API_KEY=your_key
-OPENAI_API_KEY=your_key
-ANTHROPIC_API_KEY=your_key
+# API Keys - Add for providers you want to use
+GOOGLE_GENERATIVE_AI_API_KEY=your_google_api_key
+GROQ_API_KEY=your_groq_api_key  
+OPENAI_API_KEY=your_openai_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
 
-# Models
+# Model Selection (pre-configured with best defaults)
 GEMINI_MODEL=gemini-2.5-pro
 GROQ_MODEL=llama-3.3-70b-versatile
 OPENAI_MODEL=gpt-4o-mini
-
-# RAG (optional)
-VECTOR_DB_PROVIDER=libsql
-RAG_DATABASE_URL=file:../rag-vectors.db
-EMBEDDING_MODEL=text-embedding-3-small
-
-# MCP Server
-SITE_URL=http://localhost:4112
+ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
 ```
 
-## Testing
+## Available Scripts
 
 ```bash
-# Run all tests
-npm test
-
-# Test with UI
-npm run test:ui
-
-# Coverage report
-npm run test:coverage
-
-# Evaluation pipeline
-npm run eval:ci
+# Development
+pnpm dev          # Start with hot-reload
+pnpm build        # Build for production
+pnpm start        # Run production build
 ```
 
-## Deployment
+## MCP Server Endpoints
 
-### Development
-```bash
-npm run dev
-```
+When running, agents are exposed via MCP endpoints:
 
-### Production
-```bash
-npm run build
-npm run start
-```
+- **Weather Agent**: `http://localhost:4111/api/mcp/weatherAgent/mcp`
+- **Autonomous Network**: `http://localhost:4111/api/mcp/autonomousNetwork/mcp`
 
-### Docker
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run build
-EXPOSE 4112
-CMD ["npm", "start"]
-```
+Use these endpoints to integrate with Claude Code, IDEs, or other MCP-compatible tools.
 
-## Documentation
-
-- **[Development Guide](./DEVELOPMENT_GUIDE.md)** - Comprehensive development documentation
-- **[Architecture Overview](./docs/)** - Detailed architectural patterns
-- **[API Reference](./docs/)** - Complete API documentation
-
-## Examples
-
-### Creating a New Agent
+## Creating New Agents
 
 ```typescript
 // src/mastra/agents/my-agent.ts
 import { Agent } from '@mastra/core/agent';
-import { groq } from '@ai-sdk/groq';
+import { google } from '@ai-sdk/google';
 
 export const myAgent = new Agent({
   name: 'My Agent',
-  model: groq('llama-3.3-70b-versatile'),
+  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'),
   tools: { myTool },
   instructions: 'You are a specialized agent that...',
 });
 ```
 
-### Adding RAG Capabilities
+## Key Implementation Notes
 
-```typescript
-// Enhanced with vector search
-import { myVectorQueryTool } from '../../libs/rag/query-tools';
-
-export const myAgent = new Agent({
-  // ... basic config
-  tools: { myTool, myVectorQueryTool },
-});
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Follow the existing architectural patterns
-4. Add tests for new features
-5. Update documentation
-6. Submit a pull request
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
+- **Provider Flexibility**: Easily switch between AI providers via environment variables
+- **Type Safety**: Full TypeScript support throughout the framework
+- **Evaluation Ready**: Built-in evaluation metrics for quality assurance
+- **Production Ready**: Includes logging, telemetry, and error handling
+- **Extensible**: Modular architecture for easy customization
 
 ## Resources
 
 - [Mastra Documentation](https://docs.mastra.ai)
-- [Model Context Protocol](https://modelcontextprotocol.io)
 - [AI SDK Documentation](https://ai-sdk.dev)
+- [Model Context Protocol](https://modelcontextprotocol.io)
 
 ---
 

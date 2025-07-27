@@ -12,6 +12,11 @@ const memory = new Memory({
   }),
 });
 
+/**
+ * Network coordination model using Google Gemini
+ */
+const autonomousNetworkModel = google(process.env.GEMINI_MODEL || 'gemini-2.5-pro');
+
 export const autonomousNetwork = new NewAgentNetwork({
   id: 'autonomousNetwork',
   name: 'Autonomous Intelligence Network',
@@ -44,6 +49,9 @@ export const autonomousNetwork = new NewAgentNetwork({
     - Memory tools for persistent knowledge storage and remembering user preferences
     - Advanced reasoning capabilities for nuanced responses
     
+    IMPORTANT: You are using AI SDK providers with built-in model management.
+    Be efficient with coordination and avoid unnecessary agent calls for optimal performance.
+    
     **Comprehensive Coordination Strategy**:
     
     **Weather-focused scenarios**:
@@ -73,9 +81,15 @@ export const autonomousNetwork = new NewAgentNetwork({
     - Combine practical information with emotional/spiritual support when appropriate
     - Provide holistic responses that address multiple dimensions of user needs
     
+    **Coordination Strategy**:
+    - Prioritize the most relevant agent for each request
+    - Combine related queries to minimize API calls  
+    - Use intelligent delegation based on user intent
+    - Provide efficient, focused responses
+    
     Always explain your coordination decisions, provide comprehensive responses that leverage multiple agents when beneficial, and create meaningful connections between practical information, guidance, and inspiration.
   `,
-  model: google(process.env.GEMINI_TOOL_MODEL || 'gemini-2.5-pro'),
+  model: autonomousNetworkModel,
   agents: {
     weatherAgent,
     eightBallAgent,

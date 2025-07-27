@@ -1,9 +1,8 @@
 import { Agent } from '@mastra/core/agent';
-import { groq } from '@ai-sdk/groq';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { weatherTool } from '../tools/weather-tool';
-import { weatherVectorQueryTool, weatherGraphQueryTool } from '../../../libs/rag/conditional-tools';
+import { google } from '@ai-sdk/google';
 import { 
   AnswerRelevancyMetric, 
   FaithfulnessMetric, 
@@ -32,26 +31,25 @@ export const weatherAgent = new Agent({
 
       You have access to:
       - weatherTool for fetching current weather data from Open-Meteo API
-      - weatherVectorQueryTool for searching through weather and activity knowledge base to provide comprehensive recommendations
 `,
-  model: groq(process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'),
-  tools: { weatherTool, weatherVectorQueryTool, weatherGraphQueryTool },
+  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'),
+  tools: { weatherTool },
   memory: new Memory({
     storage: new LibSQLStore({
       url: 'file:../mastra.db', // path is relative to the .mastra/output directory
     }),
   }),
   evals: {
-    answerRelevancy: new AnswerRelevancyMetric(groq('llama-3.3-70b-versatile'), {
+    answerRelevancy: new AnswerRelevancyMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
       uncertaintyWeight: 0.3,
       scale: 1,
     }),
-    faithfulness: new FaithfulnessMetric(groq('llama-3.3-70b-versatile'), {
+    faithfulness: new FaithfulnessMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
       scale: 1,
       context: [], // Will be populated dynamically during evaluation
     }),
     toneConsistency: new ToneConsistencyMetric(),
-    hallucination: new HallucinationMetric(groq('llama-3.3-70b-versatile'), {
+    hallucination: new HallucinationMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
       scale: 1,
       context: [], // Will be populated dynamically during evaluation
     }),
