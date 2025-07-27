@@ -1,17 +1,19 @@
 /**
- * Content Production Workflow
+ * Content Production Workflow with Proxy Integration
  * 
- * Orchestrates a comprehensive content production pipeline combining research,
- * analysis, and writing to create high-quality, well-researched content.
+ * Orchestrates a comprehensive content production pipeline with intelligent
+ * rate limiting, key rotation, and suspend/resume patterns for maximizing
+ * free tier API usage. All LLM calls use ProxyLanguageModel for optimal quota management.
  */
 
 import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { z } from 'zod';
-import { researchCoordinatorAgent, webResearchAgent } from '../agents/research-coordinator-agent';
-import { dataAnalysisAgent } from '../agents/data-analysis-agent';
-import { contentWriterAgent } from '../agents/content-writer-agent';
+import { ProxyLanguageModel } from '../utils/proxy-language-model.js';
 
-// Step 1: Research Step using Research Coordinator Agent
+// Initialize proxy-enabled language model
+const proxyModel = new ProxyLanguageModel();
+
+// Step 1: Research Step using Proxy Model
 const researchStep = createStep({
   id: 'research-step',
   inputSchema: z.object({
@@ -26,31 +28,40 @@ const researchStep = createStep({
   execute: async ({ inputData }) => {
     const { topic, depth } = inputData;
     
-    console.log('📚 Step 1: Conducting research...');
+    console.log('📚 Step 1: Conducting research with proxy...');
     
-    const prompt = `Conduct comprehensive research on: "${topic}"
-    
-    Research requirements:
-    - Depth: ${depth}
-    - Focus on current market trends and insights
-    - Include key findings and strategic implications
-    - Provide structured data for content creation
-    
-    Please use your research tools to gather comprehensive information on this topic.`;
-    
-    const { text } = await researchCoordinatorAgent.generate([
-      { role: 'user', content: prompt }
-    ]);
-    
-    return {
-      research_data: text,
-      success: true,
-      topic,
-    };
+    try {
+      const result = await proxyModel.generateText({
+        messages: [
+          { 
+            role: 'user', 
+            content: `Conduct comprehensive research on: "${topic}"
+            
+            Research requirements:
+            - Depth: ${depth}
+            - Focus on current market trends and insights
+            - Include key findings and strategic implications
+            - Provide structured data for content creation
+            
+            Please provide detailed research findings on this topic.`
+          }
+        ],
+        maxTokens: 1000
+      });
+      
+      return {
+        research_data: result.text,
+        success: true,
+        topic,
+      };
+    } catch (error) {
+      console.error('Research step failed:', error);
+      throw error;
+    }
   },
 });
 
-// Step 2: Analysis Step using Data Analysis Agent
+// Step 2: Analysis Step using Proxy Model
 const analysisStep = createStep({
   id: 'analysis-step',
   inputSchema: z.object({
@@ -67,35 +78,44 @@ const analysisStep = createStep({
   execute: async ({ inputData }) => {
     const { research_data, topic } = inputData;
     
-    console.log('🔍 Step 2: Analyzing research data...');
+    console.log('🔍 Step 2: Analyzing research data with proxy...');
     
-    const prompt = `Analyze the research data and generate strategic insights for: "${topic}"
-    
-    Research Data:
-    ${research_data}
-    
-    Analysis requirements:
-    - Perform trend analysis on the provided data
-    - Identify key insights and patterns
-    - Generate actionable recommendations
-    - Provide structured analysis suitable for content creation
-    
-    Please use your data analysis tools to process this information.`;
-    
-    const { text } = await dataAnalysisAgent.generate([
-      { role: 'user', content: prompt }
-    ]);
-    
-    return {
-      analysis_results: text,
-      success: true,
-      research_data,
-      topic,
-    };
+    try {
+      const result = await proxyModel.generateText({
+        messages: [
+          { 
+            role: 'user', 
+            content: `Analyze the research data and generate strategic insights for: "${topic}"
+            
+            Research Data:
+            ${research_data}
+            
+            Analysis requirements:
+            - Perform trend analysis on the provided data
+            - Identify key insights and patterns
+            - Generate actionable recommendations
+            - Provide structured analysis suitable for content creation
+            
+            Please provide detailed analysis of this information.`
+          }
+        ],
+        maxTokens: 800
+      });
+      
+      return {
+        analysis_results: result.text,
+        success: true,
+        research_data,
+        topic,
+      };
+    } catch (error) {
+      console.error('Analysis step failed:', error);
+      throw error;
+    }
   },
 });
 
-// Step 3: Content Creation Step using Content Writer Agent
+// Step 3: Content Creation Step using Proxy Model
 const contentCreationStep = createStep({
   id: 'content-creation-step',
   inputSchema: z.object({
@@ -112,36 +132,45 @@ const contentCreationStep = createStep({
   execute: async ({ inputData }) => {
     const { topic, research_data, analysis_results } = inputData;
     
-    console.log('✍️ Step 3: Creating content...');
+    console.log('✍️ Step 3: Creating content with proxy...');
     
-    const prompt = `Create high-quality article content on: "${topic}"
-    
-    Target Audience: business professionals
-    
-    Research Data:
-    ${research_data}
-    
-    Analysis Results:
-    ${analysis_results}
-    
-    Content Requirements:
-    - Create engaging, professional content
-    - Incorporate research findings and analysis insights
-    - Maintain professional tone appropriate for business professionals
-    - Structure content for optimal readability
-    - Include compelling introduction and strong conclusion
-    
-    Please use your content writing tools to create comprehensive content.`;
-    
-    const { text } = await contentWriterAgent.generate([
-      { role: 'user', content: prompt }
-    ]);
-    
-    return {
-      content: text,
-      success: true,
-      research_summary: research_data,
-    };
+    try {
+      const result = await proxyModel.generateText({
+        messages: [
+          { 
+            role: 'user', 
+            content: `Create high-quality article content on: "${topic}"
+            
+            Target Audience: business professionals
+            
+            Research Data:
+            ${research_data}
+            
+            Analysis Results:
+            ${analysis_results}
+            
+            Content Requirements:
+            - Create engaging, professional content
+            - Incorporate research findings and analysis insights
+            - Maintain professional tone appropriate for business professionals
+            - Structure content for optimal readability
+            - Include compelling introduction and strong conclusion
+            
+            Please create comprehensive, well-structured content.`
+          }
+        ],
+        maxTokens: 2000
+      });
+      
+      return {
+        content: result.text,
+        success: true,
+        research_summary: research_data,
+      };
+    } catch (error) {
+      console.error('Content creation step failed:', error);
+      throw error;
+    }
   },
 });
 
@@ -202,9 +231,15 @@ const webResearchStep = createStep({
     
     Please use your web research tools to gather current, relevant information.`;
     
-    const { text } = await webResearchAgent.generate([
-      { role: 'user', content: prompt }
-    ]);
+    // Use proxy model for web research instead of agent
+    const result = await proxyModel.generateText({
+      messages: [
+        { role: 'user', content: prompt }
+      ],
+      maxTokens: 1000
+    });
+    
+    const text = result.text;
     
     return {
       web_research_data: text,
@@ -260,9 +295,15 @@ const enhancedContentCreationStep = createStep({
     
     Please use your content writing tools to create exceptional content.`;
     
-    const { text } = await contentWriterAgent.generate([
-      { role: 'user', content: prompt }
-    ]);
+    // Use proxy model for content writing instead of agent
+    const result = await proxyModel.generateText({
+      messages: [
+        { role: 'user', content: prompt }
+      ],
+      maxTokens: 2000
+    });
+    
+    const text = result.text;
     
     return {
       content: text,
@@ -311,9 +352,15 @@ const contentReviewStep = createStep({
     
     Please use your content review tools to provide comprehensive feedback.`;
     
-    const { text } = await contentWriterAgent.generate([
-      { role: 'user', content: prompt }
-    ]);
+    // Use proxy model for content writing instead of agent
+    const result = await proxyModel.generateText({
+      messages: [
+        { role: 'user', content: prompt }
+      ],
+      maxTokens: 2000
+    });
+    
+    const text = result.text;
     
     return {
       final_content: content,

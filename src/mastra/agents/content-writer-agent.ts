@@ -7,7 +7,7 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
-import { google } from '@ai-sdk/google';
+import { ProxyLanguageModel } from '../utils/proxy-language-model.js';
 import { contentWritingTool, contentReviewTool } from '../tools/content-writing-tool';
 import { 
   AnswerRelevancyMetric, 
@@ -70,7 +70,7 @@ export const contentWriterAgent = new Agent({
     
     Always create content that is informative, engaging, and valuable to the target audience.
   `,
-  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), // Use Gemini 2.5 Pro for creative writing
+  model: new ProxyLanguageModel(), // Use Gemini 2.5 Pro for creative writing
   tools: { contentWritingTool, contentReviewTool },
   memory: new Memory({
     storage: new LibSQLStore({
@@ -78,18 +78,18 @@ export const contentWriterAgent = new Agent({
     }),
   }),
   evals: {
-    answerRelevancy: new AnswerRelevancyMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    answerRelevancy: new AnswerRelevancyMetric(new ProxyLanguageModel(), {
       uncertaintyWeight: 0.3,
       scale: 1,
     }),
-    faithfulness: new FaithfulnessMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    faithfulness: new FaithfulnessMetric(new ProxyLanguageModel(), {
       scale: 1,
       context: [],
     }),
-    summarization: new SummarizationMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    summarization: new SummarizationMetric(new ProxyLanguageModel(), {
       scale: 1,
     }),
-    toxicity: new ToxicityMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    toxicity: new ToxicityMetric(new ProxyLanguageModel(), {
       scale: 1,
     }),
     toneConsistency: new ToneConsistencyMetric(),

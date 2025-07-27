@@ -8,8 +8,8 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
-import { google } from '@ai-sdk/google';
-import { researchTool } from '../tools/research-tool';
+import { ProxyLanguageModel } from '../utils/proxy-language-model.js';
+import { researchTool, webResearchTool } from '../tools/research-tool';
 import { 
   AnswerRelevancyMetric, 
   FaithfulnessMetric,
@@ -53,7 +53,7 @@ export const researchCoordinatorAgent = new Agent({
     
     Always provide structured research plans and coordinate effectively with other agents in the content production pipeline.
   `,
-  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), // Use Gemini 2.5 Pro for research
+  model: new ProxyLanguageModel(), // Use Gemini 2.5 Pro for research
   tools: { researchTool },
   memory: new Memory({
     storage: new LibSQLStore({
@@ -61,15 +61,15 @@ export const researchCoordinatorAgent = new Agent({
     }),
   }),
   evals: {
-    answerRelevancy: new AnswerRelevancyMetric(google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), {
+    answerRelevancy: new AnswerRelevancyMetric(new ProxyLanguageModel(), {
       uncertaintyWeight: 0.2,
       scale: 1,
     }),
-    faithfulness: new FaithfulnessMetric(google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), {
+    faithfulness: new FaithfulnessMetric(new ProxyLanguageModel(), {
       scale: 1,
       context: [],
     }),
-    summarization: new SummarizationMetric(google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), {
+    summarization: new SummarizationMetric(new ProxyLanguageModel(), {
       scale: 1,
     }),
     toneConsistency: new ToneConsistencyMetric(),
@@ -116,19 +116,19 @@ export const webResearchAgent = new Agent({
     
     Always provide comprehensive, well-sourced research findings with clear quality indicators.
   `,
-  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), // Use Gemini 2.5 Pro for web research
-  tools: { webResearchTool: require('../tools/research-tool').webResearchTool },
+  model: new ProxyLanguageModel(), // Use Gemini 2.5 Pro for web research
+  tools: { webResearchTool },
   memory: new Memory({
     storage: new LibSQLStore({
       url: 'file:../mastra.db',
     }),
   }),
   evals: {
-    answerRelevancy: new AnswerRelevancyMetric(google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), {
+    answerRelevancy: new AnswerRelevancyMetric(new ProxyLanguageModel(), {
       uncertaintyWeight: 0.3,
       scale: 1,
     }),
-    faithfulness: new FaithfulnessMetric(google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), {
+    faithfulness: new FaithfulnessMetric(new ProxyLanguageModel(), {
       scale: 1,
       context: [],
     }),

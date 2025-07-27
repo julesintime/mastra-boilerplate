@@ -40,7 +40,10 @@ export function createAutonomousNetworkServer(autonomousNetwork: any) {
     }),
     execute: async ({ context }) => {
       try {
-        const result = await autonomousNetwork.generate(context.message);
+        const result = await autonomousNetwork.generate([{
+          role: 'user',
+          content: context.message
+        }]);
         return result.text || result;
       } catch (error) {
         return `Error processing request: ${error instanceof Error ? error.message : 'Unknown error'}`;
@@ -140,14 +143,14 @@ export function createContentProductionNetworkServer(contentProductionNetwork: a
     }),
     execute: async ({ context }) => {
       try {
-        const result = await contentProductionNetwork.execute({
-          topic: context.topic,
-          content_type: context.content_type || 'article',
-          target_audience: context.target_audience || 'business professionals',
-          research_depth: context.research_depth || 'moderate',
-          quality_level: context.quality_level || 'standard',
-        });
-        return result.success ? result.network_result : `Error: ${result.error}`;
+        const message = `Create content about: ${context.topic}. Content type: ${context.content_type || 'article'}. Target audience: ${context.target_audience || 'business professionals'}. Research depth: ${context.research_depth || 'moderate'}. Quality level: ${context.quality_level || 'standard'}.`;
+        
+        const result = await contentProductionNetwork.generate([{
+          role: 'user',
+          content: message
+        }]);
+        
+        return result.text || result;
       } catch (error) {
         return `Error processing request: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }

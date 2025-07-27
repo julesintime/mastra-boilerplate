@@ -2,7 +2,7 @@ import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { quotesTool } from '../tools/quotes-tool';
-import { google } from '@ai-sdk/google';
+import { ProxyLanguageModel } from '../utils/proxy-language-model.js';
 import { 
   AnswerRelevancyMetric, 
   BiasMetric,
@@ -34,7 +34,7 @@ export const quotesAgent = new Agent({
       
       Always aim to uplift, inspire, and provide meaningful wisdom that can positively impact the user's day or perspective.
 `,
-  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'),
+  model: new ProxyLanguageModel(),
   tools: { quotesTool },
   memory: new Memory({
     storage: new LibSQLStore({
@@ -42,18 +42,18 @@ export const quotesAgent = new Agent({
     }),
   }),
   evals: {
-    answerRelevancy: new AnswerRelevancyMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    answerRelevancy: new AnswerRelevancyMetric(new ProxyLanguageModel(), {
       uncertaintyWeight: 0.3,
       scale: 1,
     }),
     toneConsistency: new ToneConsistencyMetric(),
-    bias: new BiasMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    bias: new BiasMetric(new ProxyLanguageModel(), {
       scale: 1,
     }),
-    toxicity: new ToxicityMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    toxicity: new ToxicityMetric(new ProxyLanguageModel(), {
       scale: 1,
     }),
-    summarization: new SummarizationMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    summarization: new SummarizationMetric(new ProxyLanguageModel(), {
       scale: 1,
     }),
     completeness: new CompletenessMetric(),

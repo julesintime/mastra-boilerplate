@@ -7,7 +7,7 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
-import { google } from '@ai-sdk/google';
+import { ProxyLanguageModel } from '../utils/proxy-language-model.js';
 import { dataAnalysisTool, trendAnalysisTool } from '../tools/data-analysis-tool';
 import { 
   AnswerRelevancyMetric, 
@@ -66,7 +66,7 @@ export const dataAnalysisAgent = new Agent({
     
     Always provide thorough, well-reasoned analysis with clear strategic implications.
   `,
-  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), // Use Gemini 2.5 Pro for analytical thinking
+  model: new ProxyLanguageModel(), // Use Gemini 2.5 Pro for analytical thinking
   tools: { dataAnalysisTool, trendAnalysisTool },
   memory: new Memory({
     storage: new LibSQLStore({
@@ -74,15 +74,15 @@ export const dataAnalysisAgent = new Agent({
     }),
   }),
   evals: {
-    answerRelevancy: new AnswerRelevancyMetric(google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), {
+    answerRelevancy: new AnswerRelevancyMetric(new ProxyLanguageModel(), {
       uncertaintyWeight: 0.2,
       scale: 1,
     }),
-    faithfulness: new FaithfulnessMetric(google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), {
+    faithfulness: new FaithfulnessMetric(new ProxyLanguageModel(), {
       scale: 1,
       context: [],
     }),
-    hallucination: new HallucinationMetric(google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'), {
+    hallucination: new HallucinationMetric(new ProxyLanguageModel(), {
       scale: 1,
       context: [],
     }),

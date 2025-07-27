@@ -1,0 +1,67 @@
+{
+  "providers": {
+    "gemini": {
+      "keys": [
+        {
+          "id": "gemini_key_1",
+          "key": "AIzaSyDLRSBbwgfj9qtHCXzVGGl9z7BScrd5iTY",
+          "limits": {
+            "requests_per_minute": 15,
+            "requests_per_day": 50,
+            "tokens_per_minute": 10000,
+            "tokens_per_day": 100000
+          },
+          "usage_today": {
+            "requests": 20,
+            "tokens": 17400,
+            "last_reset": "2025-07-27",
+            "last_request_time": "2025-07-27T22:59:03.202Z"
+          },
+          "last_used": "2025-07-27T22:59:03.202Z",
+          "status": "active"
+        },
+        {
+          "id": "gemini_key_2",
+          "key": "AIzaSyANeBDFZKrWwrsAnmPYf8WvuFSSbPt7Ki4",
+          "limits": {
+            "requests_per_minute": 15,
+            "requests_per_day": 50,
+            "tokens_per_minute": 10000,
+            "tokens_per_day": 100000
+          },
+          "usage_today": {
+            "requests": 7,
+            "tokens": 5200,
+            "last_reset": "2025-07-27",
+            "last_request_time": "2025-07-27T22:20:54.691Z"
+          },
+          "last_used": "2025-07-27T22:20:54.691Z",
+          "status": "active"
+        }
+      ],
+      "rotation_strategy": "round_robin",
+      "patient_mode": true,
+      "retry_policy": {
+        "base_delay_ms": 60000,
+        "max_delay_ms": 86400000,
+        "exponential_factor": 2,
+        "jitter_factor": 0.1,
+        "max_retries": 100
+      }
+    }
+  },
+  "global_settings": {
+    "patient_mode": true,
+    "max_workflow_duration_hours": 72,
+    "suspend_on_all_keys_exhausted": true,
+    "resume_check_interval_minutes": 30,
+    "daily_quota_reset_hour": 0,
+    "rate_limit_buffer_percentage": 0.1
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-01-27",
+    "description": "Patient Content Factory - API key configuration for maximizing free tier quotas",
+    "last_updated": "2025-07-27"
+  }
+}

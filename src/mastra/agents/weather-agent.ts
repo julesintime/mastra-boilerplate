@@ -2,7 +2,7 @@ import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { weatherTool } from '../tools/weather-tool';
-import { google } from '@ai-sdk/google';
+import { ProxyLanguageModel } from '../utils/proxy-language-model.js';
 import { 
   AnswerRelevancyMetric, 
   FaithfulnessMetric, 
@@ -32,7 +32,7 @@ export const weatherAgent = new Agent({
       You have access to:
       - weatherTool for fetching current weather data from Open-Meteo API
 `,
-  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'),
+  model: new ProxyLanguageModel(),
   tools: { weatherTool },
   memory: new Memory({
     storage: new LibSQLStore({
@@ -40,16 +40,16 @@ export const weatherAgent = new Agent({
     }),
   }),
   evals: {
-    answerRelevancy: new AnswerRelevancyMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    answerRelevancy: new AnswerRelevancyMetric(new ProxyLanguageModel(), {
       uncertaintyWeight: 0.3,
       scale: 1,
     }),
-    faithfulness: new FaithfulnessMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    faithfulness: new FaithfulnessMetric(new ProxyLanguageModel(), {
       scale: 1,
       context: [], // Will be populated dynamically during evaluation
     }),
     toneConsistency: new ToneConsistencyMetric(),
-    hallucination: new HallucinationMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    hallucination: new HallucinationMetric(new ProxyLanguageModel(), {
       scale: 1,
       context: [], // Will be populated dynamically during evaluation
     }),

@@ -2,7 +2,7 @@ import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { LibSQLStore } from '@mastra/libsql';
 import { eightBallTool } from '../tools/eightball-tool';
-import { google } from '@ai-sdk/google';
+import { ProxyLanguageModel } from '../utils/proxy-language-model.js';
 import { 
   AnswerRelevancyMetric, 
   BiasMetric,
@@ -33,7 +33,7 @@ export const eightBallAgent = new Agent({
       
       Always provide context around the reading and encourage users to use their own judgment in decision-making.
 `,
-  model: google(process.env.GEMINI_MODEL || 'gemini-2.5-pro'),
+  model: new ProxyLanguageModel(),
   tools: { eightBallTool },
   memory: new Memory({
     storage: new LibSQLStore({
@@ -41,15 +41,15 @@ export const eightBallAgent = new Agent({
     }),
   }),
   evals: {
-    answerRelevancy: new AnswerRelevancyMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    answerRelevancy: new AnswerRelevancyMetric(new ProxyLanguageModel(), {
       uncertaintyWeight: 0.3,
       scale: 1,
     }),
     toneConsistency: new ToneConsistencyMetric(),
-    bias: new BiasMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    bias: new BiasMetric(new ProxyLanguageModel(), {
       scale: 1,
     }),
-    toxicity: new ToxicityMetric(google(process.env.EVAL_LLM_MODEL || 'gemini-2.5-pro'), {
+    toxicity: new ToxicityMetric(new ProxyLanguageModel(), {
       scale: 1,
     }),
     completeness: new CompletenessMetric(),

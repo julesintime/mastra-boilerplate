@@ -8,7 +8,14 @@ This file provides guidance to Claude Code when working with this Mastra AI agen
 
 ## Project Overview
 
-This is a **minimal, production-ready Mastra AI boilerplate** for agent orchestration with MCP server integration.
+This is a **production-ready Mastra AI boilerplate** with intelligent proxy system for API key rotation and rate limiting.
+
+## Key Features
+
+- **🔄 Intelligent Proxy System**: ProxyLanguageModel with automatic API key rotation
+- **⏱️ Rate Limit Handling**: Exponential backoff and queue management for free tier optimization
+- **🚀 vNext Networks**: NewAgentNetwork architecture with enhanced timeout handling
+- **📊 Quota Management**: Daily usage tracking and automatic reset detection
 
 ## Quick Start
 
@@ -19,15 +26,30 @@ pnpm dev
 
 ## Architecture
 
-- **Agents**: `src/mastra/agents/` - AI agents with tools and memory
+- **Agents**: `src/mastra/agents/` - AI agents using ProxyLanguageModel
 - **Tools**: `src/mastra/tools/` - Custom tool implementations  
-- **Workflows**: `src/mastra/workflows/` - Business process orchestration
-- **Networks**: `src/mastra/networks/` - Agent coordination systems
+- **Workflows**: `src/mastra/workflows/` - Long-running business processes
+- **Networks**: `src/mastra/networks/` - vNext agent coordination (use `/api/networks/v-next/`)
+- **Utils**: `src/mastra/utils/` - ProxyLanguageModel and ProxyManager
 - **MCP Servers**: `src/mastra/mcps.ts` - External integration endpoints
 
-## MCP Server Integration
+## Proxy System
 
-Development server exposes agents at:
-- **Weather Agent**: `http://localhost:4111/api/mcp/weatherAgent/mcp`
-- **Autonomous Network**: `http://localhost:4111/api/mcp/autonomousNetwork/mcp`
-- **Content Workflow**: `http://localhost:4111/api/mcp/contentProductionWorkflowShort/mcp`
+All LLM calls use `ProxyLanguageModel` for:
+- Intelligent API key rotation
+- Rate limit detection and exponential backoff
+- Extended timeout handling for long operations
+- Abort signal support for cancellation
+
+Configure in `proxies.json` with your API keys.
+
+## API Endpoints
+
+**vNext Networks** (preferred):
+- List: `GET /api/networks/v-next`
+- Specific: `GET /api/networks/v-next/{networkId}`
+- Generate: `POST /api/networks/v-next/{networkId}/generate`
+
+**MCP Servers**:
+- Weather Agent: `http://localhost:4114/api/mcp/weatherAgent/mcp`
+- Content Network: `http://localhost:4114/api/mcp/contentProductionNetwork/mcp`
